@@ -35,19 +35,18 @@ car_t *lget() {
 }
 
 void lapply(void (*fn)(car_t *cp)) {
-	car_t *curr = front;
-	while (curr != NULL) {
+	car_t *curr;
+	for (curr = front; curr != NULL; curr = curr->next) {
 		fn(curr);
-		curr = curr->next; 
 	}
 
 	return; 
 }
 
 car_t *lremove(char *platep) {
-	car_t *curr = front;
+	car_t *curr;
 	car_t *prev = NULL;
-	while (curr != NULL) {
+	for (curr = front; curr != NULL; curr = curr->next) {
 		if (strcmp (curr->plate, platep) == 0){ // check if plates match
 			if (prev == NULL) {
 				front = curr->next; // removing the first in the list
@@ -60,7 +59,6 @@ car_t *lremove(char *platep) {
 			return curr; 
 		}
 		prev = curr; // move to next in list
-		curr = curr->next; 
 	}
 	return NULL; 
 }

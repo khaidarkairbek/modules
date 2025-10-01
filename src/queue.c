@@ -10,15 +10,32 @@
  */
 
 #include "queue.h"
-#include <stdint.>
+#include <stdint.h>
 #include <string.h>
 #include <stddef.h>
 #include <stdlib.h>
 
+typedef struct node {
+	void *data; // node for any data
+	struct node *next;
+} node_t;
+
+typedef struct queue {
+	node_t *front;
+	node_t *back;
+} queue_list_t;
+
 // create an empty queue
 queue_t* qopen(void){ 
-
+	queue_list_t *qp = malloc (sizeof (queue_list_t)); // allocate memory
+	if (!qp) {
+		return NULL;
+	}
+	qp->front = NULL;
+	qp->back = NULL;
+	return (queue_t *)qp; // cast to queue_t type
 }
+	
 
 // deallocate a queue, frees everything in it
 void qclose(queue_t *qp){
@@ -27,8 +44,29 @@ void qclose(queue_t *qp){
 
 // put element at end of queue
 int32_t qput (queue_t *qp, void *elementp){
+	queue_list_t *qp_tmp = (queue_list_t *) qp;
+	node_t *p = malloc (sizeof (node_t));
+	
+	if (!qp) { // checks if pointer is valid
+		return 1;
+	}
 
+	if (!p) {
+		return 1;
+	}
 
+	p->data = elementp;
+	p->next = NULL; // put at the end of the list
+
+	if (qp_tmp->back != NULL){
+		qp_tmp->back->next = p; // if queue not empty, put new element in the back
+		qp_tmp->back = p;
+	}
+	else { // if queue is empty, set front and back to new element
+		qp_tmp->front = p;
+		qp_tmp->front = p;
+	}
+	return 0;
 }
 
 // get the first element from queue, remove it
@@ -38,7 +76,7 @@ void* qget(queue_t *qp){
 }
 
 // apply a function to every element of the queue
-void qapply (queue *qp, void (*fn)(void* elementp)) {
+void qapply (queue_t *qp, void (*fn)(void* elementp)) {
 
 }
 

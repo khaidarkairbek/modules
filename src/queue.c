@@ -64,7 +64,7 @@ int32_t qput (queue_t *qp, void *elementp){
 	}
 	else { // if queue is empty, set front and back to new element
 		qp_tmp->front = p;
-		qp_tmp->front = p;
+		qp_tmp->back = p;
 	}
 	return 0;
 }
@@ -77,7 +77,17 @@ void* qget(queue_t *qp){
 
 // apply a function to every element of the queue
 void qapply (queue_t *qp, void (*fn)(void* elementp)) {
+	queue_list_t *qp_tmp = (queue_list_t *) qp;
+	node_t *curr;
 
+	if (!qp){
+		return;
+	}
+	
+	for (curr = qp_tmp->front; curr != NULL; curr = curr->next){
+		fn(curr->data);
+	}
+	
 }
 
 // search a queue using a supplied boolean function

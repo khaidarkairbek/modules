@@ -5,7 +5,7 @@
  * Created: 09-30-2025
  * Version: 1.0
  * 
- * Description: test qopen()
+ * Description: test qopen(), qput(), and qapply()
  * 
  */
 
@@ -21,6 +21,12 @@ typedef struct person {
 	double rate;
 } person_t;
 
+static double sum = 0;
+
+void sum_salary (void *pp){
+	person_t *pp_tmp = (person_t*)pp;
+	sum = sum + pp_tmp->rate;
+}
 
 person_t *make_person(char *name, int age, double rate){
 	person_t *pp;
@@ -35,7 +41,9 @@ person_t *make_person(char *name, int age, double rate){
 }
 
 int main(void){
-	person_t *p1, *p2, *p3;
+	person_t p1 = {"Fred", 20, 20.0};
+	person_t p2 = {"Ava", 21, 21.0};
+	person_t p3 = {"Daniel", 22, 18.5};
 	queue_t *qp;
 
 	qp = qopen();
@@ -44,41 +52,45 @@ int main(void){
 		printf("Failed to create queue!\n");
 		exit(EXIT_FAILURE);
 	}
-	
-	p1 = make_person("Fred", 20, 20.0);
-	p2 = make_person("Ava", 21, 21.0);
-	p3 = make_person("Daniel", 22, 18.5);
 
-	if (!p1 || !p2 || !p3 ){
-		printf("Failed to allocate people\n");
+	// check qapply to empty list
+	qapply(qp, sum_salary);
+
+	if (sum != 0 ) {
+		printf("Failed to sum empty queue\n");
 		exit(EXIT_FAILURE);
 	}
-
-	if (qput(qp, (void*)p1) != 0) {
+		
+	if (qput(qp, &p1) != 0) {
 		printf("Failed to add p1 into queue\n");
 		exit(EXIT_FAILURE);
 	}
 
 	printf("Added p1 to queue.\n");
 
-	if (qput(qp, (void*)p2) != 0) {
+	if (qput(qp, &p2) != 0) {
 		printf("Failed to add p2 into queue\n");
 		exit(EXIT_FAILURE);
 	}
 
 	printf("Added p2 to queue.\n");
 
-	if (qput(qp, (void*)p3) != 0) {
+	if (qput(qp, &p3) != 0) {
 		printf("Failed to add p3 into queue\n");
 		exit(EXIT_FAILURE);
 	}
 
 	printf("Added p3 to queue.\n");
 
-	free(p1);
-	free(p2);
-	free(p3);
-	
+	// check qapply to full list
+	qapply(qp, sum_salary);
+
+	if (sum != p1.rate + p2.rate + p3.rate) {
+		printf("Failed to apply function\n");
+		printf("sum = %f", sum);
+		exit(EXIT_FAILURE);
+	}
+			
 	exit(EXIT_SUCCESS);
 
 }

@@ -121,6 +121,23 @@ void* qremove(queue_t *qp, bool (*searchfn)(void* elementp, const void* keyp), c
 
 // concatenates elements of q2 into q1
 void qconcat(queue_t *q1p, queue_t *q2p){
+	queue_list_t *q1p_tmp = (queue_list_t *) q1p;
+	queue_list_t *q2p_tmp = (queue_list_t *) q2p;
 
+	if (!q2p_tmp->front) { // q2 empty
+		free(q2p_tmp);
+		return;
+	}
+	
+	if (!q1p_tmp->front){ // q1 empty
+		q1p_tmp->front = q2p_tmp->front;
+		q1p_tmp->back = q2p_tmp->back;
+	}
+	else {
+		q1p_tmp->back->next = q2p_tmp->front;
+		q1p_tmp->back = q2p_tmp->back;
+	}
+	
+	qclose(q2p_tmp);
 
 }

@@ -71,7 +71,25 @@ int32_t qput (queue_t *qp, void *elementp){
 
 // get the first element from queue, remove it
 void* qget(queue_t *qp){
+	if (!qp) return NULL; // invalid queue
+	
+	queue_list_t *qp_tmp = (queue_list_t *) qp;
 
+	if (!qp_tmp->front) return NULL; // empty queue
+
+	node_t *first = qp_tmp->front;
+	void *data = first->data;
+
+
+	
+
+	qp_tmp->front = first->next; // set new front to next in line
+	if (!qp_tmp->front) { // if queue is now empty, set back to NULL
+		qp_tmp->back = NULL;
+	}
+
+	free(first);
+	return(data);
 
 }
 

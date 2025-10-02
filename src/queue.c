@@ -39,7 +39,7 @@ queue_t* qopen(void){
 
 // deallocate a queue, frees everything in it
 void qclose(queue_t *qp){
-
+	free(qp); 
 }
 
 // put element at end of queue
@@ -80,9 +80,6 @@ void* qget(queue_t *qp){
 	node_t *first = qp_tmp->front;
 	void *data = first->data;
 
-
-	
-
 	qp_tmp->front = first->next; // set new front to next in line
 	if (!qp_tmp->front) { // if queue is now empty, set back to NULL
 		qp_tmp->back = NULL;
@@ -90,7 +87,6 @@ void* qget(queue_t *qp){
 
 	free(first);
 	return(data);
-
 }
 
 // apply a function to every element of the queue
@@ -110,13 +106,48 @@ void qapply (queue_t *qp, void (*fn)(void* elementp)) {
 
 // search a queue using a supplied boolean function
 void* qsearch (queue_t *qp, bool (*searchfn)(void* elementp, const void* keyp), const void* skeyp){
+	void *result = NULL; 
+	node_t *front = ((queue_list_t *) qp)->front;
+	for (node_t *curr = front; curr != NULL; curr = curr->next) {
+		if (searchfn(curr->data, skeyp)) {
+			result = curr->data;
+			break; 
+		};
+	}
 
+	return result; 
 }
 
 //searches a queue using a supplied boolean function,
 // removes the element and returns a pointer to it
 void* qremove(queue_t *qp, bool (*searchfn)(void* elementp, const void* keyp), const void* skeyp){
+	queue_list_t *qp_tmp = (queue_list_t *) qp;
+	
+	void *result = NULL;
+	node_t *front = qp_tmp->front;
+	node_t *back = qp_tmp->back; 
+	
+	for (node_t *curr = front, *prev = NULL; curr != NULL; prev = curr, curr = curr->next) {
+		if (searchfn(curr->data, skeyp)) {
+			result = curr->data;
+			// if node to be deleted in front, change front pointer 
+			if (curr == front) {
+				qp_tmp->front = curr->next; 
+			} else {
+				prev->next = curr->next; 
+			}
 
+			// if node to be deleted at the end, change back pointer 
+			if (curr->next == back) {
+				qp_tmp->back = prev; 
+			}
+
+			free(curr);
+			break; 
+		}
+	}
+
+	return result; 
 }
 
 // concatenates elements of q2 into q1
@@ -139,5 +170,4 @@ void qconcat(queue_t *q1p, queue_t *q2p){
 	}
 	
 	qclose(q2p_tmp);
-
 }

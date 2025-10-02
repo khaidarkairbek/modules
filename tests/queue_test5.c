@@ -47,7 +47,7 @@ int main() {
 
 	qput(qp, &value33);
 
-	if (qsearch(qp, searchfn, &key1) != &value3) exit(EXIT_FAILURE);
+	if (qsearch(qp, searchfn, &key) != &value3) exit(EXIT_FAILURE);
 
 	exit(EXIT_SUCCESS); 
 }

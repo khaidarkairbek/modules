@@ -3,6 +3,9 @@
  *
  */
 #include <stdint.h>
+#include "hash.h"
+#include <stddef.h>
+#include <stdlib.h>
 
 /* 
  * SuperFastHash() -- produces a number between 0 and the tablesize-1.
@@ -54,4 +57,68 @@ static uint32_t SuperFastHash (const char *data,int len,uint32_t tablesize) {
   hash += hash >> 6;
   return hash % tablesize;
 }
+
+#define TABLE_SIZE 10 
+
+typedef struct hnode {
+	char *key;
+	int keylen; 
+	void *ep;
+	struct hnode *next;
+} hnode_t_; 
+
+typedef struct hashtable {
+	hnode_t_ *data[TABLE_SIZE];
+} hashtable_t_; 
+
+hashtable_t *hopen(uint32_t hsize) {
+	hashtable_t_ *table = malloc(sizeof(hashtable_t_));
+	for (int i = 0; i < TABLE_SIZE; ++i) {
+		table->data[i] = NULL; 
+	}
+	
+	return (hashtable_t *) table; 
+}
+
+void happly(hashtable_t *htp, void (*fn)(void* ep)) {
+	hashtable_t_ *htp_ = (hashtable_t_ *)htp; 
+	
+	for (int i = 0; i < TABLE_SIZE; ++i) {
+		for (hnode_t_ *curr = htp_->data[i]; curr != NULL; curr = curr->next) {
+			fn(curr->ep); 
+		}
+	}
+
+	return; 
+}
+
+void *hremove(hashtable_t *htp,
+							bool (*searchfn)(void* elementp, const void* searchkeyp),
+							const char *key,
+							int32_t keylen) {
+	hashtable_t_ *htp_ = (hashtable_t_ *) htp;
+	
+	if (!htp_ || !key || keylen < 0) return NULL;
+
+	uint32_t idx = SuperFastHash(key, keylen, TABLE_SIZE);
+	void *result = NULL;
+	
+	for (hnode_t_ *curr = htp_->data[idx], *prev = NULL; curr != NULL; curr = curr->next) {
+		if (curr->keylen == keylen && searchfn(curr->ep, (const void *)key)) {
+			if (prev) {
+				prev->next = curr->next;
+			} else {
+				htp_->data[idx] = curr->next;
+			}
+
+			result = (void *) curr->ep;
+
+			free(curr); 
+			break;
+		}
+	}
+
+	return result; 
+}
+
 

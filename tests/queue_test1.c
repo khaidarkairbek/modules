@@ -28,22 +28,22 @@ void sum_salary (void *pp){
 	sum = sum + pp_tmp->rate;
 }
 
-person_t *make_person(char *name, int age, double rate){
-	person_t *pp;
-	if (!(pp = (person_t*) malloc (sizeof (person_t)))) {
-		printf("error: malloc failed allocating person\n");
-		return NULL;
-	}
-	strcpy(pp->name, name);
-	pp->age = age;
-	pp->rate = rate;
-	return pp;
+void print_person (void* personp){
+	person_t *p = (person_t *) personp;
+	printf("Name: %s, Age: %d, Rate: %.2f \n", p->name, p->age, p->rate);
 }
+
+void print_queue(queue_t *qp){
+	printf("Queue Contents:\n");
+	qapply(qp, print_person);
+}
+
 
 int main(void){
 	person_t p1 = {"Fred", 20, 20.0};
 	person_t p2 = {"Ava", 21, 21.0};
 	person_t p3 = {"Daniel", 22, 18.5};
+	person_t *output;
 	queue_t *qp;
 
 	qp = qopen();
@@ -60,6 +60,7 @@ int main(void){
 		printf("Failed to sum empty queue\n");
 		exit(EXIT_FAILURE);
 	}
+	printf("Succesfully did not apply sum to empty queue\n");
 		
 	if (qput(qp, &p1) != 0) {
 		printf("Failed to add p1 into queue\n");
@@ -67,6 +68,7 @@ int main(void){
 	}
 
 	printf("Added p1 to queue.\n");
+	print_queue(qp);
 
 	if (qput(qp, &p2) != 0) {
 		printf("Failed to add p2 into queue\n");
@@ -74,6 +76,7 @@ int main(void){
 	}
 
 	printf("Added p2 to queue.\n");
+	print_queue(qp);
 
 	if (qput(qp, &p3) != 0) {
 		printf("Failed to add p3 into queue\n");
@@ -81,7 +84,8 @@ int main(void){
 	}
 
 	printf("Added p3 to queue.\n");
-
+	print_queue(qp);
+	
 	// check qapply to full list
 	qapply(qp, sum_salary);
 
@@ -90,7 +94,17 @@ int main(void){
 		printf("sum = %f", sum);
 		exit(EXIT_FAILURE);
 	}
-			
+
+	// remove all nodes:
+	output = qget(qp);
+	printf("Removing: %s\n", output->name);
+	output = qget(qp);
+	printf("Removing: %s\n", output->name);	
+	output = qget(qp);
+	printf("Removing: %s\n", output->name);	
+	
+	qclose(qp); // free up memory
+	
 	exit(EXIT_SUCCESS);
 
 }

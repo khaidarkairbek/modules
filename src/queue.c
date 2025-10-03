@@ -169,5 +169,5 @@ void qconcat(queue_t *q1p, queue_t *q2p){
 		q1p_tmp->back = q2p_tmp->back;
 	}
 	
-	qclose(q2p_tmp);
+	free(q2p_tmp);
 }

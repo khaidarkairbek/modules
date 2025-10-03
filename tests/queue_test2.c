@@ -22,6 +22,16 @@ typedef struct person {
 	double rate;
 } person_t;
 
+void print_person (void* personp){
+	person_t *p = (person_t *) personp;
+	printf("Name: %s, Age: %d, Rate: %.2f \n", p->name, p->age, p->rate);
+}
+
+void print_queue(queue_t *qp){
+	printf("Queue Contents:\n");
+	qapply(qp, print_person);
+}
+
 int main(void){
 	person_t p1 = {"Fred", 20, 20.0};
 	person_t p2 = {"Ava", 21, 21.0};
@@ -37,18 +47,25 @@ int main(void){
 	if (output != NULL){ // checks again if empty
 		exit(EXIT_FAILURE);
 	}
+	printf("Successfully qget on empty list\n");
 
 	qput(qp, &p1);
 	qput(qp, &p2);
 	qput(qp, &p3);
 
-	output = qget(qp);
+	printf("Filled queue with 3 people:\n");
+	print_queue(qp);
 
+	output = qget(qp);
+	
 	if (output->age != p1.age){
 		exit(EXIT_FAILURE);
 	}
 	printf("%s removed from the queue!\n", output->name);
 
+	printf("People Remaining:\n");
+	print_queue(qp);
+	
 	output = qget(qp);
 
 	if (output->age != p2.age){
@@ -56,6 +73,9 @@ int main(void){
 	}
 	printf("%s removed from the queue!\n", output->name);
 
+	printf("People Remaining:\n");
+	print_queue(qp);
+	
 	output = qget(qp);
 
 	if (output->age != p3.age){
@@ -63,6 +83,9 @@ int main(void){
 	}
 	printf("%s removed from the queue!\n", output->name);
 
+	printf("People Remaining:\n");
+	print_queue(qp);
+	
 	output = qget(qp);
 	
 	if (output != NULL){ // checks again if empty
@@ -70,6 +93,7 @@ int main(void){
 	}
 
 	printf("No more people in the queue!\n");
+	qclose(qp);
 	exit(EXIT_SUCCESS);
 }
 	

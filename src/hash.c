@@ -58,34 +58,49 @@ static uint32_t SuperFastHash (const char *data,int len,uint32_t tablesize) {
   return hash % tablesize;
 }
 
-#define TABLE_SIZE 10 
 
 typedef struct hnode {
 	char *key;
-	int keylen; 
-	void *ep;
+	
+	void *value;
+	
 	struct hnode *next;
 } hnode_t_; 
 
 typedef struct hashtable {
-	hnode_t_ *data[TABLE_SIZE];
+	hnode_t_ **data;
+	uint32_t size; // the number of buckets 
 } hashtable_t_; 
 
 hashtable_t *hopen(uint32_t hsize) {
 	hashtable_t_ *table = malloc(sizeof(hashtable_t_));
-	for (int i = 0; i < TABLE_SIZE; ++i) {
-		table->data[i] = NULL; 
-	}
+	
+	table->size = hsize;
+	table->data = (hnode_t_ **) malloc(sizeof(hnode_t_ *) * hsize);
+
+	// if data can not be allocated, cleanup and return
+	if (!table->data) {
+		free(table);
+		return NULL; 
+	}; 
+
+	// need to nullify pointers to the nodes
+	for (uint32_t idx = 0; idx < hsize; ++idx) {
+		table->data[idx] = NULL; 
+	}	
 	
 	return (hashtable_t *) table; 
 }
 
 void happly(hashtable_t *htp, void (*fn)(void* ep)) {
-	hashtable_t_ *htp_ = (hashtable_t_ *)htp; 
-	
-	for (int i = 0; i < TABLE_SIZE; ++i) {
-		for (hnode_t_ *curr = htp_->data[i]; curr != NULL; curr = curr->next) {
-			fn(curr->ep); 
+	hashtable_t_ *htp_ = (hashtable_t_ *) htp;
+	if (htp_ == NULL) return; 
+
+	// iterate over buckets
+	for (int idx = 0; idx < htp_->size; ++idx) {
+		// iterate over linked-list within a bucket
+		for (hnode_t_ *curr = htp_->data[idx]; curr != NULL; curr = curr->next) {
+			fn(curr->value); 
 		}
 	}
 
@@ -100,18 +115,18 @@ void *hremove(hashtable_t *htp,
 	
 	if (!htp_ || !key || keylen < 0) return NULL;
 
-	uint32_t idx = SuperFastHash(key, keylen, TABLE_SIZE);
+	uint32_t idx = SuperFastHash(key, keylen, htp_->size);
 	void *result = NULL;
-	
+
 	for (hnode_t_ *curr = htp_->data[idx], *prev = NULL; curr != NULL; curr = curr->next) {
-		if (curr->keylen == keylen && searchfn(curr->ep, (const void *)key)) {
+		if (searchfn(curr->value, (const void *)key)) {
 			if (prev) {
 				prev->next = curr->next;
 			} else {
 				htp_->data[idx] = curr->next;
 			}
 
-			result = (void *) curr->ep;
+			result = (void *) curr->value;
 
 			free(curr); 
 			break;

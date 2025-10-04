@@ -49,5 +49,12 @@ int main() {
 
 	if (qsearch(qp, searchfn, &key) != &value3) exit(EXIT_FAILURE);
 
+	qremove(qp, searchfn, &value1);
+	qremove(qp, searchfn, &value2);
+	qremove(qp, searchfn, &value3);
+	qremove(qp, searchfn, &value33); 
+
+	qclose(qp); 
+
 	exit(EXIT_SUCCESS); 
 }

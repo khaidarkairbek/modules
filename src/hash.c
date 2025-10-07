@@ -130,9 +130,8 @@ int32_t hput(hashtable_t *htp, void *ep, const char *key, int keylen){
 		free(node);
 		return 3;
 	}
-
-	// KHAIDAR: ERROR HANDLING HERE? 
-	strcpy(node->key, key);
+ 
+	strncpy(node->key, key, keylen);
 	node->value = ep;
 
 	node->next = table->data[index]; // points new node to previous list back

@@ -97,11 +97,10 @@ void hclose(hashtable_t *htp){
 	if (htp == NULL) return;
 
 	hashtable_t_ *table = (hashtable_t_ *) htp;
-	int i;
 	hnode_t_ *next, *curr;
 	
-	for ( i = 0; i < TABLE_SIZE; i++){
-		curr = table->data[i]; // get hashtable entry / linked list for given index
+	for (uint32_t idx = 0; idx < table->size; idx++){
+		curr = table->data[idx]; // get hashtable entry / linked list for given index
 		while ( curr != NULL){
 			next = curr->next; // loop through all list entries
 
@@ -111,6 +110,7 @@ void hclose(hashtable_t *htp){
 			curr = next;
 		}
 	}
+	free(table->data); 
 	free(table);
 }
 
@@ -120,7 +120,7 @@ int32_t hput(hashtable_t *htp, void *ep, const char *key, int keylen){
 	}
 
 	hashtable_t_ *table = (hashtable_t_ *) htp;
-	uint32_t index = SuperFastHash(key, keylen, TABLE_SIZE);
+	uint32_t index = SuperFastHash(key, keylen, table->size);
 	hnode_t_ *node = malloc(sizeof(hnode_t_));
 
 	if (node == NULL) return 2;
@@ -131,14 +131,13 @@ int32_t hput(hashtable_t *htp, void *ep, const char *key, int keylen){
 		return 3;
 	}
 
+	// KHAIDAR: ERROR HANDLING HERE? 
 	strcpy(node->key, key);
-	node->keylen = keylen;
-	node->ep = ep;
+	node->value = ep;
 
 	node->next = table->data[index]; // points new node to previous list back
 	table->data[index] = node; // sets node as the new back of the list
 	return 0;
-
 }
 
 void happly(hashtable_t *htp, void (*fn)(void* ep)) {
@@ -160,16 +159,16 @@ void *hsearch(hashtable_t *htp, bool(*searchfn)(void* elementp, const void* sear
 	if (htp == NULL || searchfn == NULL || key == NULL || keylen <= 0) return NULL;
 
 	hashtable_t_ *table = (hashtable_t_ *) htp;
-	uint32_t index = SuperFastHash(key, keylen, TABLE_SIZE);
+	uint32_t index = SuperFastHash(key, keylen, table->size);
 	hnode_t_ *curr;
 	void *found = NULL;
 	bool match = false;
 
 	for (curr = table->data[index]; curr != NULL && !match; curr=curr->next){
-		match = searchfn(curr->ep, (const void *)key);
+		match = searchfn(curr->value, (const void *)key);
 
 		if (match) {
-			found = curr->ep;
+			found = curr->value;
 		}
 	}
 
@@ -198,7 +197,8 @@ void *hremove(hashtable_t *htp,
 
 			result = (void *) curr->value;
 
-			free(curr); 
+			free(curr->key); 
+			free(curr);
 			break;
 		}
 	}

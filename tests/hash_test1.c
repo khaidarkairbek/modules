@@ -36,8 +36,6 @@ int main(void) {
 	person_t p1 = {"Fred", 20, 20.0};
 	person_t p2 = {"Ava", 21, 21.0};
 	person_t p3 = {"Daniel", 22, 18.5};
-	person_t p4 = {"John", 52, 13};
-	person_t p5 = {"Sarah", 80, 33};
 
 	htp = hopen(10);
 

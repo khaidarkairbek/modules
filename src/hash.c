@@ -6,6 +6,7 @@
 #include "hash.h"
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* 
  * SuperFastHash() -- produces a number between 0 and the tablesize-1.
@@ -92,6 +93,54 @@ hashtable_t *hopen(uint32_t hsize) {
 	return (hashtable_t *) table; 
 }
 
+void hclose(hashtable_t *htp){
+	if (htp == NULL) return;
+
+	hashtable_t_ *table = (hashtable_t_ *) htp;
+	int i;
+	hnode_t_ *next, *curr;
+	
+	for ( i = 0; i < TABLE_SIZE; i++){
+		curr = table->data[i]; // get hashtable entry / linked list for given index
+		while ( curr != NULL){
+			next = curr->next; // loop through all list entries
+
+			// free memory
+			free(curr->key); 
+			free(curr);
+			curr = next;
+		}
+	}
+	free(table);
+}
+
+int32_t hput(hashtable_t *htp, void *ep, const char *key, int keylen){
+	if (htp == NULL || ep == NULL || key == NULL || keylen <= 0 ){
+		return 1;
+	}
+
+	hashtable_t_ *table = (hashtable_t_ *) htp;
+	uint32_t index = SuperFastHash(key, keylen, TABLE_SIZE);
+	hnode_t_ *node = malloc(sizeof(hnode_t_));
+
+	if (node == NULL) return 2;
+
+	node->key = malloc(keylen);
+	if (node->key == NULL){
+		free(node);
+		return 3;
+	}
+
+	strcpy(node->key, key);
+	node->keylen = keylen;
+	node->ep = ep;
+
+	node->next = table->data[index]; // points new node to previous list back
+	table->data[index] = node; // sets node as the new back of the list
+	return 0;
+
+}
+
 void happly(hashtable_t *htp, void (*fn)(void* ep)) {
 	hashtable_t_ *htp_ = (hashtable_t_ *) htp;
 	if (htp_ == NULL) return; 
@@ -105,6 +154,27 @@ void happly(hashtable_t *htp, void (*fn)(void* ep)) {
 	}
 
 	return; 
+}
+
+void *hsearch(hashtable_t *htp, bool(*searchfn)(void* elementp, const void* searchkeyp), const char *key, int32_t keylen){
+	if (htp == NULL || searchfn == NULL || key == NULL || keylen <= 0) return NULL;
+
+	hashtable_t_ *table = (hashtable_t_ *) htp;
+	uint32_t index = SuperFastHash(key, keylen, TABLE_SIZE);
+	hnode_t_ *curr;
+	void *found = NULL;
+	bool match = false;
+
+	for (curr = table->data[index]; curr != NULL && !match; curr=curr->next){
+		match = searchfn(curr->ep, (const void *)key);
+
+		if (match) {
+			found = curr->ep;
+		}
+	}
+
+	return found;
+
 }
 
 void *hremove(hashtable_t *htp,

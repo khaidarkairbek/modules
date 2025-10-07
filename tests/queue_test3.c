@@ -11,7 +11,7 @@
 
 
 #include <stdlib.h>
-#include <queue.h>
+#include "queue.h"
 #include <stdio.h>
 #include <string.h>
 #define NAMELEN 20

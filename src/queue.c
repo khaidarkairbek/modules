@@ -39,6 +39,13 @@ queue_t* qopen(void){
 
 // deallocate a queue, frees everything in it
 void qclose(queue_t *qp){
+	queue_list_t *qp_tmp = (queue_list_t *) qp; 
+	node_t *next;
+	for (node_t *curr = qp_tmp->front; curr != NULL; curr = next) {
+		next = curr->next; 
+		free(curr);
+	}
+	
 	free(qp); 
 }
 

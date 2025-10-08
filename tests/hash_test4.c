@@ -22,6 +22,10 @@ bool searchfn(void *ep, const void *key) {
 	return false; 
 }
 
+void printnodes(void* ep) {
+	printf("%d\n", *((int *) ep)); 
+}
+
 int main(void) {
 	int a = 5;
 	int b = 6;
@@ -33,10 +37,15 @@ int main(void) {
 	if (hput(ht, &b, "ab", 2) != 0) exit(EXIT_FAILURE);
 	if (hput(ht, &c, "abc", 3) != 0) exit(EXIT_FAILURE);
 
+	happly(ht, printnodes); 
+
 	int *a_ = hremove(ht, searchfn, "a", 1);
 	if (*a_ != 5) exit(EXIT_FAILURE);
+	printf("after removing: \n"); 
+	happly(ht, printnodes); 
 	if (hremove(ht, searchfn, "a", 1) != NULL) exit(EXIT_FAILURE);
-
+	printf("after second remove: \n");
+	happly(ht, printnodes); 
 	hclose(ht);
 
 	printf("succeeded\n"); 

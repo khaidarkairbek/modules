@@ -200,6 +200,8 @@ void *hremove(hashtable_t *htp,
 			free(curr);
 			break;
 		}
+
+		prev = curr; 
 	}
 
 	return result; 
